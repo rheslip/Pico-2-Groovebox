@@ -1,6 +1,12 @@
 # Pico 2 Groovebox
  Sample player/groovebox based on RP2350
 
+demo and tutorial https://www.youtube.com/watch?v=hEJh2LgJkRc&t=5s 
+ 
+ ![Alt text](https://github.com/rheslip/Pico-2-Groovebox/blob/main/images/front.jpg "Front")
+ ![Alt text](https://github.com/rheslip/Pico-2-Groovebox/blob/main/images/back.jpg "Back")
+ 
+ 
 **Hardware components used**
 
 Pimoroni Pico 2+ with 8mb PSRAM (for sample storage)
@@ -48,6 +54,8 @@ Internally, clips are stored as MIDI sequences. I may consider adding MIDI I/O t
 
 **Track Screen and Menus**
 
+ ![Alt text](https://github.com/rheslip/Pico-2-Groovebox/blob/main/images/trackmenu.jpg "trackmenu")
+
 The top line of the screen shows the currently selected Track:Scene, Song and Record indicators when enabled, and a Bar:Step indicator. On the far right is a simple battery level display.
 
 Below that is a sequencer progress bar which indicates where the sequencer is. This is helpful when recording.
@@ -59,6 +67,8 @@ Below the piano roll is a parameter menu for each track for loading a sample, se
 
 **Setup Menu**
 
+ ![Alt text](https://github.com/rheslip/Pico-2-Groovebox/blob/main/images/setupmenu.jpg "setupmenu")
+ 
 Hold the TRACK key and turn the encoder to scroll through tracks 1-16. The first menu past track 16 is the Song chain menu (below). The next menu is Setup which allows selection of BPM, master volume and the musical scale to use on the numbered keys.
 
 **Scales**
@@ -93,10 +103,15 @@ Sample Slicer + Pattern Generator = a lot of fun!
 
 **Song Chain**
 
+ ![Alt text](https://github.com/rheslip/Pico-2-Groovebox/blob/main/images/songmenu.jpg "songmenu")
+ 
 As described above, the first menu when scrolling past track 16 is the Song Chain. The Song Chain is a list of scenes and the number of repeats for each  scene. By default all scene counts are 0 except for Scene 1 which will always have a minimum repeat count of 1. A song chain is set up by selecting the number of times you would like each scene to repeat. If the count is 0, that scene is skipped. At the the end of the chain the song will restart at Scene 1. To play the song, hold the Play key until the "SONG" indicator on the top line of the display is on. To turn song mode off, hold the Play key until the "SONG" indicator goes off.
 
 Note: In song mode, a scene is completed/counted down when ALL clips arrive on the last step at the same time. e.g. if one of the tracks is set to a sequence length of 64 and the others are 16 steps, the other tracks will be repeated 4 times and when the 64 step sequence ends the scene counter will be counted down. If we have a track with a sequence length of 16 and another with a length of 15, it will take 16 iterations for the two tracks to arrive at the last step at the same time. If you add another track with 14 steps, its going to take a long time for them to all arrive at the last step at the same time! In general you should keep sequence lengths multiples of 16 or 1 bar.
 
+**A Word on SD Cards**
+
+I don't think its mandatory for micro SD card to work with a SPI interface. I have a small assortment of 4gb, 8gb and 16gb micro SD cards and very few of them seem to work with SPI. Make sure the card is formatted as FAT16 or FAT32. All samples **MUST** be under a directory in the root named "Samples". As mentioned before it is suggested you organize your samples in subdirectories with no more than 50 or so samples to keep loading time to a minimum. The maximum path length is 200 characters so don't go too crazy on the directory and sample name lengths.
 
 **FAQ**
 
