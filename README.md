@@ -69,13 +69,13 @@ Note that sample pitch and sample tuning are accomplished by a resampling algori
 
 **Pattern Generator**
 
-The pattern generator is an alternate way of loading trigger patterns into the sequencer. There are currently fifty three 16 bit trigger patterns organized from fewest triggers with pattern 0 having no triggers to pattern 53 which triggers on every sequencer step. Trigger patterns include some common drum patterns and some Euclidean patterns. If the sequencer length is set to a length longer than 16, the pattern will be repeated till the sequencer is full. If the sequencer length is less than 16 the trigger pattern will be shortened to the sequencer length. This is a handy way to chop a pattern off - shorten the sequence, load a trigger pattern and then lengthen the sequence.
+The pattern generator is an alternate way of loading trigger patterns into the sequencer. There are currently fifty three 16 bit trigger patterns organized from fewest triggers with pattern 0 having no triggers to pattern 53 which triggers on every sequencer step. Trigger patterns include some common drum patterns and some Euclidean patterns. If the sequencer length is longer than 16, the pattern will be repeated till the sequencer is full. If the sequencer length is less than 16 the trigger pattern will be shortened to the sequencer length. This is a handy way to chop a pattern off - shorten the sequence, load a trigger pattern and then lengthen the sequence.
 
-The Pattern Shift parameter shifts the trigger pattern right one bit at a time, effectly adding 16 more patterns to each of the basic trigger patterns.
+The Pattern Shift parameter shifts the trigger pattern right one bit at a time, adding 16 more patterns to each of the basic trigger patterns.
 
 The Pattern Offset parameter generates a series of random pitch offsets in the range selected in the menu. These offsets are added to the base note of the sample, quantized to the current scale and inserted into the sequencer. This results in a random melody in the current scale using the current pattern. 
 
-The Level Offset parameter generates a series of random velocity offsets in the range selected in the menu. These offsets are added to velocity of the sample to give the sequence some random volume variations. The Level Offset parameter is scaled such that it maximum value (16) results in a random velocity range of 0 to 127.
+The Level Offset parameter generates a series of random velocity offsets in the range selected in the menu. These offsets are added to velocity of the sample to give the sequence some random volume variations. The Level Offset parameter is scaled such that its maximum value (16) results in a random velocity range of 0 to 127.
 
 Note that the pattern generator overwrites the sequencer clip with a new generated sequence when any of its parameters are changed. This means you can record more steps over a pattern but you can't add a pattern on top of a recorded clip.
 
@@ -93,7 +93,7 @@ Sample Slicer + Pattern Generator = a lot of fun!
 
 **Song Chain**
 
-As described above, the first menu when scrolling past track 16 is the Song Chain. The Song Chain is a list of scenes and the number of repeats for each  scene. By default all scene counts are 0 except for Scene 1 which will always have a minimum repeat count of 1. A song chain it set up by selecting the number of times you would like each scene to repeat. If the count is 0, that scene is skipped. Athe the end of the chain the song will restart at Scene 1. To play the song, hold the Play key until the "SONG" indicator on the top line of the display is on. Tor tuen song mode off, hold the Play key until the "SONG" indicator goes off.
+As described above, the first menu when scrolling past track 16 is the Song Chain. The Song Chain is a list of scenes and the number of repeats for each  scene. By default all scene counts are 0 except for Scene 1 which will always have a minimum repeat count of 1. A song chain is set up by selecting the number of times you would like each scene to repeat. If the count is 0, that scene is skipped. At the the end of the chain the song will restart at Scene 1. To play the song, hold the Play key until the "SONG" indicator on the top line of the display is on. To turn song mode off, hold the Play key until the "SONG" indicator goes off.
 
 Note: In song mode, a scene is completed/counted down when ALL clips arrive on the last step at the same time. e.g. if one of the tracks is set to a sequence length of 64 and the others are 16 steps, the other tracks will be repeated 4 times and when the 64 step sequence ends the scene counter will be counted down. If we have a track with a sequence length of 16 and another with a length of 15, it will take 16 iterations for the two tracks to arrive at the last step at the same time. If you add another track with 14 steps, its going to take a long time for them to all arrive at the last step at the same time! In general you should keep sequence lengths multiples of 16 or 1 bar.
 
@@ -104,7 +104,7 @@ How do you compile the source? I used arduino 2.3.2 with Arduino Pico v 4.1. You
 
 Why not have sequencer length set up in bars? I debated this and actually had it set up with bars at one point. I opted for the flexibility of having sequences be any length (up to 128). Its useful for ambient stuff or jamming when you want things to sound similar but not repeat exactly. Set two drum tracks to different lengths for example and the rhythm will change as the beats change relative to each other on every loop.
 
-Why the pattern generator? I had it set up as just a recorder and then quickly realized its hard to get things to record on step 1, which you want if you have multiple scenes so scene changes stay in sync. The pattern generator makes it easy to place triggers where you want them and relative to each other.
+Why the pattern generator? I had it set up as just a recorder and then quickly realized its hard (for me anyway) to play the pads to record exactly on step 1, which you want if you have multiple scenes (so scene changes are in sync). The pattern generator makes it easy to place triggers where you want them and relative to each other.
 
 Is the code stable? Not completely. It crashes now and then but I've used it for hours on end with no glitches. Still working on those pesky bugs...
 
