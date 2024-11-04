@@ -156,6 +156,7 @@ void testfunc(void) {
 // text arrays used for submenu TYPE_TEXT fields
 const char * scalenames[] = {"Chro","Maj", "Min","Hmin","MPen","mPen","Dor","Phry","Lyd","Mixo"};
 const char * shiftdirection[] = {"<"," ",">"};
+const char * onoff[] = {" Off","  On"};
 
 struct submenu sample0params[] = {
   // name,min,max,step,type,*textfield,*parameter,*handler
@@ -170,7 +171,8 @@ struct submenu sample0params[] = {
   "Pattern",0,NUMPATTERNS-1,1,TYPE_INTEGER,0,&pattern[0],setpattern,
   "Pat Shift",0,15,1,TYPE_INTEGER,0,&patshift[0],setpattern,   
   "Pat Offsets",0,15,1,TYPE_INTEGER,0,&patpitch[0],pitchrandomizer,  
-  "Pat Accents",0,16,1,TYPE_INTEGER,0,&patvelocity[0],velocityrandomizer,              
+  "Pat Accents",0,16,1,TYPE_INTEGER,0,&patvelocity[0],velocityrandomizer,  
+  "AutoRandomize",0,1,1,TYPE_TEXT,onoff,&rerandomize[0],0,               
 };
 
 struct submenu sample1params[] = {
@@ -185,7 +187,8 @@ struct submenu sample1params[] = {
   "Pattern",0,NUMPATTERNS-1,1,TYPE_INTEGER,0,&pattern[1],setpattern,
   "Pat Shift",0,15,1,TYPE_INTEGER,0,&patshift[1],setpattern, 
   "Note Offsets",0,15,1,TYPE_INTEGER,0,&patpitch[1],pitchrandomizer,  
-  "Level Offsets",0,16,1,TYPE_INTEGER,0,&patvelocity[1],velocityrandomizer,               
+  "Level Offsets",0,16,1,TYPE_INTEGER,0,&patvelocity[1],velocityrandomizer,  
+  "AutoRandomize",0,1,1,TYPE_TEXT,onoff,&rerandomize[1],0,                
 };
 
 struct submenu sample2params[] = {
@@ -200,7 +203,8 @@ struct submenu sample2params[] = {
   "Pattern",0,NUMPATTERNS-1,1,TYPE_INTEGER,0,&pattern[2],setpattern,
   "Pat Shift",0,15,1,TYPE_INTEGER,0,&patshift[2],setpattern,          
   "Note Offsets",0,15,1,TYPE_INTEGER,0,&patpitch[2],pitchrandomizer,  
-  "Level Offsets",0,16,1,TYPE_INTEGER,0,&patvelocity[2],velocityrandomizer,     
+  "Level Offsets",0,16,1,TYPE_INTEGER,0,&patvelocity[2],velocityrandomizer, 
+  "AutoRandomize",0,1,1,TYPE_TEXT,onoff,&rerandomize[2],0,       
 };
 
 struct submenu sample3params[] = {
@@ -215,7 +219,8 @@ struct submenu sample3params[] = {
   "Pattern",0,NUMPATTERNS-1,1,TYPE_INTEGER,0,&pattern[3],setpattern,
   "Pat Shift",0,15,1,TYPE_INTEGER,0,&patshift[3],setpattern,        
   "Note Offsets",0,15,1,TYPE_INTEGER,0,&patpitch[3],pitchrandomizer,  
-  "Level Offsets",0,16,1,TYPE_INTEGER,0,&patvelocity[3],velocityrandomizer,     
+  "Level Offsets",0,16,1,TYPE_INTEGER,0,&patvelocity[3],velocityrandomizer, 
+  "AutoRandomize",0,1,1,TYPE_TEXT,onoff,&rerandomize[3],0,       
 };
 
 struct submenu sample4params[] = {
@@ -230,7 +235,8 @@ struct submenu sample4params[] = {
   "Pattern",0,NUMPATTERNS-1,1,TYPE_INTEGER,0,&pattern[4],setpattern,
   "Pat Shift",0,15,1,TYPE_INTEGER,0,&patshift[4],setpattern,      
   "Note Offsets",0,15,1,TYPE_INTEGER,0,&patpitch[4],pitchrandomizer,  
-  "Level Offsets",0,16,1,TYPE_INTEGER,0,&patvelocity[4],velocityrandomizer,     
+  "Level Offsets",0,16,1,TYPE_INTEGER,0,&patvelocity[4],velocityrandomizer,
+  "AutoRandomize",0,1,1,TYPE_TEXT,onoff,&rerandomize[4],0,       
 };
 
 struct submenu sample5params[] = {
@@ -245,7 +251,8 @@ struct submenu sample5params[] = {
   "Pattern",0,NUMPATTERNS-1,1,TYPE_INTEGER,0,&pattern[5],setpattern,
   "Pat Shift",0,15,1,TYPE_INTEGER,0,&patshift[5],setpattern,     
   "Note Offsets",0,15,1,TYPE_INTEGER,0,&patpitch[5],pitchrandomizer,  
-  "Level Offsets",0,16,1,TYPE_INTEGER,0,&patvelocity[5],velocityrandomizer,     
+  "Level Offsets",0,16,1,TYPE_INTEGER,0,&patvelocity[5],velocityrandomizer,
+  "AutoRandomize",0,1,1,TYPE_TEXT,onoff,&rerandomize[5],0,      
 };
 
 struct submenu sample6params[] = {
@@ -260,7 +267,8 @@ struct submenu sample6params[] = {
   "Pattern",0,NUMPATTERNS-1,1,TYPE_INTEGER,0,&pattern[6],setpattern,
   "Pat Shift",0,15,1,TYPE_INTEGER,0,&patshift[6],setpattern,     
   "Note Offsets",0,15,1,TYPE_INTEGER,0,&patpitch[6],pitchrandomizer,  
-  "Level Offsets",0,16,1,TYPE_INTEGER,0,&patvelocity[6],velocityrandomizer,     
+  "Level Offsets",0,16,1,TYPE_INTEGER,0,&patvelocity[6],velocityrandomizer,
+  "AutoRandomize",0,1,1,TYPE_TEXT,onoff,&rerandomize[6],0,       
 };
 
 struct submenu sample7params[] = {
@@ -275,7 +283,8 @@ struct submenu sample7params[] = {
   "Pattern",0,NUMPATTERNS-1,1,TYPE_INTEGER,0,&pattern[7],setpattern,
   "Pat Shift",0,15,1,TYPE_INTEGER,0,&patshift[7],setpattern,      
   "Note Offsets",0,15,1,TYPE_INTEGER,0,&patpitch[7],pitchrandomizer,  
-  "Level Offsets",0,16,1,TYPE_INTEGER,0,&patvelocity[7],velocityrandomizer,     
+  "Level Offsets",0,16,1,TYPE_INTEGER,0,&patvelocity[7],velocityrandomizer,
+  "AutoRandomize",0,1,1,TYPE_TEXT,onoff,&rerandomize[7],0,       
 };
 
 struct submenu sample8params[] = {
@@ -290,7 +299,8 @@ struct submenu sample8params[] = {
   "Pattern",0,NUMPATTERNS-1,1,TYPE_INTEGER,0,&pattern[8],setpattern,
   "Pat Shift",0,15,1,TYPE_INTEGER,0,&patshift[8],setpattern,              
   "Note Offsets",0,15,1,TYPE_INTEGER,0,&patpitch[8],pitchrandomizer,  
-  "Level Offsets",0,16,1,TYPE_INTEGER,0,&patvelocity[8],velocityrandomizer,     
+  "Level Offsets",0,16,1,TYPE_INTEGER,0,&patvelocity[8],velocityrandomizer,
+  "AutoRandomize",0,1,1,TYPE_TEXT,onoff,&rerandomize[8],0,       
 };
 
 struct submenu sample9params[] = {
@@ -305,7 +315,8 @@ struct submenu sample9params[] = {
   "Pattern",0,NUMPATTERNS-1,1,TYPE_INTEGER,0,&pattern[9],setpattern,
   "Pat Shift",0,15,1,TYPE_INTEGER,0,&patshift[9],setpattern,    
   "Note Offsets",0,15,1,TYPE_INTEGER,0,&patpitch[9],pitchrandomizer,  
-  "Level Offsets",0,16,1,TYPE_INTEGER,0,&patvelocity[9],velocityrandomizer,     
+  "Level Offsets",0,16,1,TYPE_INTEGER,0,&patvelocity[9],velocityrandomizer,
+  "AutoRandomize",0,1,1,TYPE_TEXT,onoff,&rerandomize[9],0,       
 };
 
 struct submenu sample10params[] = {
@@ -320,7 +331,8 @@ struct submenu sample10params[] = {
   "Pattern",0,NUMPATTERNS-1,1,TYPE_INTEGER,0,&pattern[10],setpattern,
   "Pat Shift",0,15,1,TYPE_INTEGER,0,&patshift[10],setpattern,        
   "Note Offsets",0,15,1,TYPE_INTEGER,0,&patpitch[10],pitchrandomizer,  
-  "Level Offsets",0,16,1,TYPE_INTEGER,0,&patvelocity[10],velocityrandomizer,     
+  "Level Offsets",0,16,1,TYPE_INTEGER,0,&patvelocity[10],velocityrandomizer, 
+  "AutoRandomize",0,1,1,TYPE_TEXT,onoff,&rerandomize[10],0,      
 };
 
 struct submenu sample11params[] = {
@@ -335,7 +347,8 @@ struct submenu sample11params[] = {
   "Pattern",0,NUMPATTERNS-1,1,TYPE_INTEGER,0,&pattern[11],setpattern,
   "Pat Shift",0,15,1,TYPE_INTEGER,0,&patshift[11],setpattern,    
   "Note Offsets",0,15,1,TYPE_INTEGER,0,&patpitch[11],pitchrandomizer,  
-  "Level Offsets",0,16,1,TYPE_INTEGER,0,&patvelocity[11],velocityrandomizer,     
+  "Level Offsets",0,16,1,TYPE_INTEGER,0,&patvelocity[11],velocityrandomizer,
+  "AutoRandomize",0,1,1,TYPE_TEXT,onoff,&rerandomize[11],0,       
 };
 
 struct submenu sample12params[] = {
@@ -350,7 +363,8 @@ struct submenu sample12params[] = {
   "Pattern",0,NUMPATTERNS-1,1,TYPE_INTEGER,0,&pattern[12],setpattern,
   "Pat Shift",0,15,1,TYPE_INTEGER,0,&patshift[12],setpattern, 
   "Note Offsets",0,15,1,TYPE_INTEGER,0,&patpitch[12],pitchrandomizer,  
-  "Level Offsets",0,16,1,TYPE_INTEGER,0,&patvelocity[12],velocityrandomizer,     
+  "Level Offsets",0,16,1,TYPE_INTEGER,0,&patvelocity[12],velocityrandomizer, 
+  "AutoRandomize",0,1,1,TYPE_TEXT,onoff,&rerandomize[12],0,      
 };
 
 struct submenu sample13params[] = {
@@ -365,7 +379,8 @@ struct submenu sample13params[] = {
   "Pattern",0,NUMPATTERNS-1,1,TYPE_INTEGER,0,&pattern[13],setpattern,
   "Pat Shift",0,15,1,TYPE_INTEGER,0,&patshift[13],setpattern, 
   "Note Offsets",0,15,1,TYPE_INTEGER,0,&patpitch[13],pitchrandomizer,  
-  "Level Offsets",0,16,1,TYPE_INTEGER,0,&patvelocity[13],velocityrandomizer,     
+  "Level Offsets",0,16,1,TYPE_INTEGER,0,&patvelocity[13],velocityrandomizer,
+  "AutoRandomize",0,1,1,TYPE_TEXT,onoff,&rerandomize[13],0,       
 };
 
 struct submenu sample14params[] = {
@@ -380,7 +395,8 @@ struct submenu sample14params[] = {
   "Pattern",0,NUMPATTERNS-1,1,TYPE_INTEGER,0,&pattern[14],setpattern,
   "Pat Shift",0,15,1,TYPE_INTEGER,0,&patshift[14],setpattern, 
   "Note Offsets",0,15,1,TYPE_INTEGER,0,&patpitch[14],pitchrandomizer,  
-  "Level Offsets",0,16,1,TYPE_INTEGER,0,&patvelocity[14],velocityrandomizer,     
+  "Level Offsets",0,16,1,TYPE_INTEGER,0,&patvelocity[14],velocityrandomizer, 
+  "AutoRandomize",0,1,1,TYPE_TEXT,onoff,&rerandomize[14],0,      
 };
 
 struct submenu sample15params[] = {
@@ -395,7 +411,8 @@ struct submenu sample15params[] = {
   "Pattern",0,NUMPATTERNS-1,1,TYPE_INTEGER,0,&pattern[15],setpattern,
   "Pat Shift",0,15,1,TYPE_INTEGER,0,&patshift[15],setpattern, 
   "Note Offsets",0,15,1,TYPE_INTEGER,0,&patpitch[15],pitchrandomizer,  
-  "Level Offsets",0,16,1,TYPE_INTEGER,0,&patvelocity[15],velocityrandomizer,     
+  "Level Offsets",0,16,1,TYPE_INTEGER,0,&patvelocity[15],velocityrandomizer,\
+  "AutoRandomize",0,1,1,TYPE_TEXT,onoff,&rerandomize[15],0,       
 };
 
 struct submenu scenechain[] = {
@@ -412,6 +429,10 @@ struct submenu scenechain[] = {
   "SCENE 10",0,16,1,TYPE_INTEGER,0,&scenecount[9],0,
   "SCENE 11",0,16,1,TYPE_INTEGER,0,&scenecount[10],0,
   "SCENE 12",0,16,1,TYPE_INTEGER,0,&scenecount[11],0,
+  "SCENE 13",0,16,1,TYPE_INTEGER,0,&scenecount[12],0,
+  "SCENE 14",0,16,1,TYPE_INTEGER,0,&scenecount[13],0,
+  "SCENE 15",0,16,1,TYPE_INTEGER,0,&scenecount[14],0,
+  "SCENE 16",0,16,1,TYPE_INTEGER,0,&scenecount[15],0,
 };
 
 struct submenu setupparams[] = {

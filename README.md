@@ -87,6 +87,8 @@ The Pattern Offset parameter generates a series of random pitch offsets in the r
 
 The Level Offset parameter generates a series of random velocity offsets in the range selected in the menu. These offsets are added to velocity of the sample to give the sequence some random volume variations. The Level Offset parameter is scaled such that its maximum value (16) results in a random velocity range of 0 to 127.
 
+The Autorandomizer parameter when "On" will re-randomize the pitch offsets and velocity offsets when the sequencer loops back to the first step.
+
 Note that the pattern generator overwrites the sequencer clip with a new generated sequence when any of its parameters are changed. This means you can record more steps over a pattern but you can't add a pattern on top of a recorded clip.
 
 **Clip/Scene Cut and Paste**

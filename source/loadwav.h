@@ -140,7 +140,7 @@ int32_t loadwav(char * path, uint8_t * buf)
     }
 #endif 
 
-    if (length % 2) {
+    if ((length % 2) && (header[0] != 0x61746164)) { // fix for bad non-audio chunks in some files
       ++length;
 #ifdef DEBUG
       Serial.printf("Non-audio chunk %4x length %d was rounded up\n",header[0],length);
@@ -149,7 +149,7 @@ int32_t loadwav(char * path, uint8_t * buf)
 
 
 #ifdef DEBUG
-    Serial.printf("Chunk %4x length %4x\n",header[0],length);
+    Serial.printf("Chunk %4xX length %4xX %dD bytes\n",header[0],length,length);
 	  if (EOF_error) { 
       Serial.printf("end of data reading data length\n");
       return 0; // size of the data read
@@ -192,7 +192,7 @@ int32_t loadwav(char * path, uint8_t * buf)
   bytespersample=channels * datasize;
 	if (length % bytespersample) { // check that data chunk is is correct size
 #ifdef DEBUG
-      Serial.printf("file %s data length is not a multiple of %d\n", path,bytespersample);
+      Serial.printf("file %s data length %d is not a multiple of %d\n", path,length,bytespersample);
 #endif
     return 0;
   }   

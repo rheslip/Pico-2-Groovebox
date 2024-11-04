@@ -93,7 +93,7 @@ FsFile file;
 //#define SPI_CLOCK SD_SCK_MHZ(50)
 #define SPI_CLOCK SD_SCK_MHZ(25)
 
-//#define MONITOR_CPU1  // define to enable 2nd core monitoring
+#define MONITOR_CPU1  // define to enable 2nd core monitoring
 //#define HW_DEBUG  // for debug pin usage
 
 //Adafruit_SH1106 display(OLED_DC, OLED_RESET, OLED_CS);
@@ -244,13 +244,15 @@ bool play_mode = true;
 bool song_mode = false;
 bool Copybutton, Pastebutton; // button down flags
 bool shiftkey; // shift key state
-uint16_t clip_complete; // bitmap of sequencers that have just completed last step
+uint16_t clip_complete,clipflags; // bitmap of sequencers that have just completed last step
 //int16_t steps[NTRACKS] = { 16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16}; // steps for each track
 int16_t steps[NTRACKS] = { 16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16}; // steps for each track
 int16_t scenecount[NSCENES] = {1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};  // how many times to repeat scene in song mode - values changed in song menu
+int16_t rerandomize[NTRACKS] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};  // when true re-randomize notes and velocities at end of scene
 uint8_t track=0;  // current track in UI
 int16_t scene=0; // the current scene 
 int16_t scenecounter=0; // counts down scene repeats 
+
 int16_t sequencer=0; // the sequencer currently running
 int16_t current_step=0;
 int16_t last_step=0; // so we can tell when the sequencer advanced
@@ -490,7 +492,6 @@ uint32_t seqtime(void) {
 // called when the step position changes. both the current
 // position and last are passed to the callback
 // note that every sequencer uses this same callback so we use the current track number
-// to figure out which sequencer's info to display
 // *** note this runs in the interrupt when we call dosequencers()
 void step_pos(int current, int last) {
 
@@ -498,6 +499,7 @@ void step_pos(int current, int last) {
     clip_complete |= _BV(sequencer); // set flag if on last step
   }
   else clip_complete &= ~(_BV(sequencer)); // clip_complete is used to determine when all clips are on last step - for song mode
+
   if (sequencer == track) current_step=current; // this triggers display update in loop() for the current track  
 }
 
@@ -942,6 +944,40 @@ void loop() {
     }
   }
 
+// re-randomize at end of scene if user has selected to in menus
+  if (clipflags!=clip_complete) {  
+    uint16_t clips=clip_complete;  // bitmap of clips that just completed
+    for (int16_t t=0; t<NTRACKS; ++t) {
+      if ((clips & 1) && rerandomize[t] ) {  // find clips that just ended
+        for (int16_t s=0;s<MAX_STEPS;++s) {
+          pitchoffsets[t][s]=random(0,patpitch[t]+1);
+          velocityoffsets[t][s]=constrain(random(-(patvelocity[t]*4),patvelocity[t]*4),0,128);
+        }
+        uint16_t pat,mask;  // this is just a copy of setpattern() code but it doesn't use the "track" global
+        int16_t step;
+        seq[t].removeNotes(scene <<4 | t); // clear scene contents
+        pat=rightRotate(patshift[t],drumpatterns[pattern[t]],STEPS_PER_BAR); // rotate the pattern per the menu setting
+        step=0;
+        mask=0x8000;
+        for (int n=0; n < steps[t]; ++n) {
+          if ((pat & mask) !=0) { 
+            if (voice[t].slices !=0) seq[t].setNote(n,scene <<4 | t,MIDDLE_C+pitchoffsets[t][n],DEFAULT_LEVEL+velocityoffsets[t][n]); // if pattern bit is set insert slice number
+            else seq[t].setNote(n,scene <<4 | t,padtoMIDI[current_scale][pitchremap[pitchoffsets[t][n]]],DEFAULT_LEVEL+velocityoffsets[t][n]); // else insert note from current scale
+          }
+          mask=mask>>1;
+          ++step;
+          if (step == STEPS_PER_BAR) {
+            step=0; // end of pattern, repeat
+            mask=0x8000;
+          }
+        }
+        if (t == track)showpattern(track); 
+      }
+      clips=clips>>1;
+    }
+    clipflags=clip_complete; // so we wait for next change
+  }
+
 // handle touch pad used for note entry, track and scene selection
 
   currtouched = padA.touched() | (padB.touched()<<(NPADS/2)); // combine both pads
@@ -950,26 +986,7 @@ void loop() {
   if (currtouched & SHIFT_BUTTON) shiftkey=true;
   else shiftkey=false;
 
-/*
-// process play/stop/song mode button
-  if ((currtouched & TRANSPORT_BUTTON) && !(lasttouched & TRANSPORT_BUTTON)) {  // transport button pressed
-    if (shiftkey) {
-      song_mode=!song_mode;
-      showposition(0); // update the screen in case sequencers are stopped
-      if (song_mode) {
-        play_mode=false; // stop playing // *** is this right? it doesn't seem to behave that way
-        stop_sequencers(); // reset all sequencers to step 0
-        scene=0;  // start at first scene
-        scenecounter=scenecount[scene];
-      }
-    }
-    else {
-      play_mode=!play_mode;
-      if (play_mode) start_sequencers();
-      else stop_sequencers();
-    }
-  }
-*/
+
 // process play/stop/song mode button
   if ((currtouched & TRANSPORT_BUTTON) && !(lasttouched & TRANSPORT_BUTTON)) {  // transport button pressed, start timing
     transportbutton_timer=millis();
