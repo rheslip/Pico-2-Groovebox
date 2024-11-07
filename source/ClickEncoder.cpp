@@ -15,7 +15,8 @@
 // Button configuration (values for 1ms timer service calls)
 //
 #define ENC_BUTTONINTERVAL    10  // check button every x milliseconds, also debouce time
-#define ENC_DOUBLECLICKTIME  800  // second click within 00ms
+//#define ENC_DOUBLECLICKTIME  800  // second click within 00ms
+#define ENC_DOUBLECLICKTIME  100  // second click within 00ms - RH keeping short for Groovebox because I'm not using doubleclick
 #define ENC_HOLDTIME        500  // report held button after .5s
 
 // ----------------------------------------------------------------------------

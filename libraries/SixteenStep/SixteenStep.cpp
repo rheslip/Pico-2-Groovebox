@@ -482,7 +482,6 @@ void SixteenStep::setNote( int position, byte channel, byte pitch, byte velocity
 
   bool added = false;
   
-
   for(int i=0; i < _sequence_size; ++i)
   {
   // overwrite note if its already there
@@ -538,6 +537,33 @@ void SixteenStep::removeNotes(byte channel)
 	}
   }
 }
+
+// removeNote - added by RH nov 2024. 
+//
+// remove note at index on a channel
+//
+// @access public
+// @param channel
+// @return void
+//
+void SixteenStep::removeNote(int position,byte channel)
+{
+
+  for(int i=0; i < _sequence_size; ++i)
+  {
+  // overwrite note if its already there
+    if( _sequence[i].step == position && _sequence[i].channel == channel)
+    {	
+	  noInterrupts(); // only write to the sequencer with interrupts disabled
+	  _sequence[i] = DEFAULT_NOTE;
+	  interrupts();
+    }
+  }
+  noInterrupts(); // only write to the sequencer with interrupts disabled
+  _heapSort(); // RH probably not necessary
+  interrupts();
+}
+
 
 // getNote - added by RH aug 2024. 
 // *** this will only get note on steps. this works because the groovebox code ignores note offs

@@ -101,6 +101,7 @@ Adafruit_ST7735 display = Adafruit_ST7735(TFT_CS, TFT_RS, TFT_RESET);
 #define WHITE ST77XX_WHITE
 #define BLACK ST77XX_BLACK
 #define RED ST77XX_RED
+#define RED2 0xF804
 #define LIGHTGREEN 0x03e0
 #define GREEN ST77XX_GREEN
 #define BLUE ST77XX_BLUE 
@@ -119,6 +120,8 @@ Adafruit_ST7735 display = Adafruit_ST7735(TFT_CS, TFT_RS, TFT_RESET);
 #define PMALLOC_CHUNK 131072 // hopefully minimizes memory fragmentation 
 
 #define MIDDLE_C 60 // MIDI note for middle C
+#define HIGHEST_NOTE 76 // upper note for editor
+#define LOWEST_NOTE 44 // lower note for editor
 #define DEFAULT_LEVEL 64  // default MIDI velocity
 
 #define NTRACKS 16  // 
@@ -201,7 +204,7 @@ uint8_t padmap[NPADS] = {0,4,8,16, 12,1,5,9 ,17,13,2,6, 10,18,14,3, 7,11,19,15, 
 #define RECORD_BUTTON _BV(PAD19) // record, hold to delete
 #define COPY_BUTTON _BV(PAD20)   // copy clip
 #define PASTE_BUTTON _BV(PAD21)  // paste clip
-#define EXTRA_BUTTON _BV(PAD22)
+#define EDIT_BUTTON _BV(PAD22)
 #define SHIFT_BUTTON _BV(PAD23)
 #define KEY1        _BV(PAD0) // number pads
 #define KEY2        _BV(PAD1)
@@ -242,6 +245,7 @@ int8_t velocityoffsets[NTRACKS][MAX_STEPS]; // random values for velocity offset
 bool record_mode = false;
 bool play_mode = true;
 bool song_mode = false;
+bool edit_mode=false;
 bool Copybutton, Pastebutton; // button down flags
 bool shiftkey; // shift key state
 uint16_t clip_complete,clipflags; // bitmap of sequencers that have just completed last step
@@ -292,7 +296,7 @@ Adafruit_MPR121 padA = Adafruit_MPR121(); // touch keyboard used for note entry
 Adafruit_MPR121 padB = Adafruit_MPR121(); // touch keyboard used for note entry
 
 
-// chromatic pitch table - maps a midi note to a 12 bit pitch step - see voices below for how this works
+// chromatic pitch table - maps a midi note to a 12 bit pitch step - see voices below for how pitch step works
 uint32_t pitchtable[128]= {
 128,136,144,152,161,171,181,192,203,215,228,242,
 256,271,287,304,323,342,362,384,406,431,456,483,
@@ -445,7 +449,9 @@ static void alarm_irq(void) {
 }
 
 #include "loadwav.h" // to avoid forward references
+#include "seq_editor.h" // to avoid forward references
 #include "menusystem.h" // to avoid forward references
+
 
 /* no MIDI for now
 // serial MIDI handler
@@ -564,29 +570,7 @@ void setshuffle(void){
   seq[track].setShuffle(shuffle[track]); 
 }
 
-#define PIANO_ROLL_Y 30  // origin of piano roll on screen
 
-// draw sequencer pattern as a simple piano roll
-void showpattern(uint8_t track) {
-  float xstep=160.0/(float)(steps[track]); // how wide 1 step is on the screen
-  SixteenStepNote *note;
-  int16_t y;
-  uint16_t velcolor;
-  display.fillRect(0,17,160,25,BLACK); // erase old 
-  for (int i=0; i<steps[track];++i ) {
-    note=seq[track].getNote(i,(scene <<4 | track));
-    if (note->pitch !=0) {
-      y=(int) note->pitch-MIDDLE_C;  // all pitches are centered on middle C 
- //     velcolor=note->velocity <<9;  // map velocity to color
- //     velcolor=((note->velocity <<9) & 0xf000) | 0x0800;  // map velocity to color red
- //     velcolor|=((note->velocity <<5) & 0x0e00); // add some green
-      velcolor=vcolors[map(note->velocity,0,127,0,sizeof(vcolors)/sizeof(uint16_t))]; // map velocity using color table
-      y=PIANO_ROLL_Y-y/2; // flip so notes go up with pitch
-      display.drawRect((int)(i*xstep), y,(int)xstep,2, velcolor);
-    }
-    else display.drawRect((int)(i*xstep), y,(int)xstep,2,BLACK);
-  }
-}
 
 // menu callback - set pattern for current track
 // works like paste - keep repeating till scene steps are full
@@ -622,25 +606,36 @@ void setpattern(void){
 void showposition (int16_t position) {
   display.setCursor(0,DISPLAY_Y_OFFSET);
   display.printf("T%d:%d ",track+1,scene+1); 
-  display.setCursor(35,DISPLAY_Y_OFFSET);
+  display.setCursor(39,DISPLAY_Y_OFFSET);
 
   if (song_mode) {
     display.setTextColor(ORANGE,BLACK); // foreground, background 
     display.printf("SONG"); 
     display.setTextColor(WHITE,BLACK); // foreground, background 
   }    
-  else display.printf("    ");
-  display.setCursor(90,DISPLAY_Y_OFFSET);
+  else if (edit_mode) {   // we can't be in edit mode and song mode at the same time
+    display.setTextColor(GREEN,BLACK); // foreground, background 
+    display.printf("EDIT %d",editcursorX+1);
+    if ((editnote <= HIGHEST_NOTE) && (editnote >= LOWEST_NOTE)) {
+      display.setTextColor(GREEN,BLACK);
+      display.printf(" %d  ",editnote);
+    }
+    else display.printf("      ");  // erases old shit if its there
+    display.setTextColor(WHITE,BLACK); // foreground, background 
+  }    
+  else display.printf("        "); // erases old shit if its there
+
+  display.setCursor(107,DISPLAY_Y_OFFSET);
   if (record_mode) {
-    display.setTextColor(RED,BLACK); // foreground, background 
+    display.setTextColor(RED2,BLACK); // foreground, background 
     display.printf("REC"); 
     display.setTextColor(WHITE,BLACK); // foreground, background 
   }
-  else display.printf("   ");
+  else display.printf("   "); // erases old shit if its there
  //     display.setCursor(95,0);
  //     display.print("   ");
-  display.setCursor(120,DISPLAY_Y_OFFSET);
-  display.printf("%2d:%d ", position/STEPS_PER_BAR+1,position%STEPS_PER_BAR+1);  // bar:step display 
+  display.setCursor(128,DISPLAY_Y_OFFSET);
+  display.printf("%d:%d ", position/STEPS_PER_BAR+1,position%STEPS_PER_BAR+1);  // bar:step display 
   uint32_t pos;
   pos= (position+1)*160/(steps[track]); // sequencer position bar
   display.drawRect(0, 15,pos,2, YELLOW);
@@ -929,7 +924,9 @@ void loop() {
   static uint32_t recbutton_timer,transportbutton_timer;
   static bool trackerased,startsongmode;
 
-  domenus();
+
+  if (edit_mode) editnotes();  // note editor needs encoder so its mutually exclusive from menus
+  else  domenus();
 
   // first 16 menu pages are track/voice settings which have extra elements on screen
   if (topmenuindex < NTRACKS) {
@@ -949,7 +946,7 @@ void loop() {
     uint16_t clips=clip_complete;  // bitmap of clips that just completed
     for (int16_t t=0; t<NTRACKS; ++t) {
       if ((clips & 1) && rerandomize[t] ) {  // find clips that just ended
-        for (int16_t s=0;s<MAX_STEPS;++s) {
+        for (int16_t s=0;s<steps[t];++s) {
           pitchoffsets[t][s]=random(0,patpitch[t]+1);
           velocityoffsets[t][s]=constrain(random(-(patvelocity[t]*4),patvelocity[t]*4),0,128);
         }
@@ -982,10 +979,22 @@ void loop() {
 
   currtouched = padA.touched() | (padB.touched()<<(NPADS/2)); // combine both pads
 
-// save shift button state
+// process the edit key
+  if ((currtouched & EDIT_BUTTON)  && !(lasttouched & EDIT_BUTTON)) {
+    edit_mode=!edit_mode; // toggle note editor on/off
+    if (edit_mode) {
+      song_mode=false; // can't edit in song mode
+      editstate=INIT_EDITOR;  // reset editor state machine
+    }
+    else {
+      eraseeditcursor(editcursorX);
+      Encoder1.getButton(); // resets encoder button state which may not have been read
+    }
+  }
+
+// save shift key state
   if (currtouched & SHIFT_BUTTON) shiftkey=true;
   else shiftkey=false;
-
 
 // process play/stop/song mode button
   if ((currtouched & TRANSPORT_BUTTON) && !(lasttouched & TRANSPORT_BUTTON)) {  // transport button pressed, start timing
@@ -1030,10 +1039,11 @@ void loop() {
   }
   if (!(currtouched & RECORD_BUTTON) && (lasttouched & RECORD_BUTTON)) {  // record button released   
     if ( recholdtime < RECBUTTON_HOLD_TIME) {
-      record_mode=!record_mode;
-      showposition(0);  // update the screen in case sequencers are stopped
+        record_mode=!record_mode;
     }
+    showposition(0);  // update the screen in case sequencers are stopped
   }
+
 
 // process copy button
   if ((currtouched & COPY_BUTTON) && !(lasttouched & COPY_BUTTON)) {  // copy button pressed
@@ -1048,19 +1058,21 @@ void loop() {
   }
 
 // debug
+/*
   if ((currtouched & EXTRA_BUTTON) && !(lasttouched & EXTRA_BUTTON)) {  
     seq[track].dumpNotes();
   }
+*/
 
 // process number pads - note entry, track and scene select etc
   for (uint8_t i=0; i<NPADS; i++) { // have to scan all the pads because they are not in order
     if (padmap[i] < 16) { // process just the number pads
       if ((currtouched & _BV(i)) && !(lasttouched & _BV(i)) ) { // if pad was pressed
         if ((currtouched & SCENE_BUTTON) && (!(currtouched & COPY_BUTTON)) && (!(currtouched & PASTE_BUTTON))) {
-          scene=padmap[i];  // scene button + pad = change scene
+          if (!edit_mode) scene=padmap[i];  // scene button + pad = change scene
           showpattern(track); // update piano roll for this scene
         }
-        else if (currtouched & TRACK_BUTTON) { // track button + pad = change track
+        else if ((currtouched & TRACK_BUTTON) && (!edit_mode)) { // track button + pad = change track
           track=topmenuindex=padmap[i];  // *** kludgy - force menu to that track
           uistate=SUBSELECT; // do submenu when button is released
           topmenu[topmenuindex].submenuindex=0;  // start from the first item
@@ -1106,7 +1118,7 @@ void loop() {
 
   batteryvoltage=constrain(batteryvoltage,3.0, 4.2);
   int16_t batterygauge=int((batteryvoltage-3.0)*8); // usable battery range is 4.2v down to 3.0v for safety, 10 pixel gauge
-  if (topmenuindex < NTRACKS) display.drawRect(152, 10-batterygauge,DISPLAY_Y_OFFSET,batterygauge, WHITE); // display for track menus only - will display on next call to display.display
+  if (topmenuindex < NTRACKS) display.drawRect(155, 10-batterygauge,DISPLAY_Y_OFFSET,batterygauge, WHITE); // display for track menus only - will display on next call to display.display
  // Serial.printf("battery %f gauge %d\n", batteryvoltage, batterygauge);
 
 } // end of main loop()

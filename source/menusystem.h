@@ -736,6 +736,7 @@ void domenus(void) {
         drawselector(topmenu[topmenuindex].submenuindex);   
       } 
       if (!digitalRead(ENC_SW)) { // submenu item has been selected so either go back to top or go to change parameter state
+      //if ((Encoder1.getButton() == ClickEncoder::Clicked)) { // submenu item has been selected so either go back to top or go to change parameter state
 	      submenu * sub;
 		    sub=topmenu[topmenuindex].submenus; //get pointer to the submenu array
         if (sub[topmenu[topmenuindex].submenuindex].ptype ==TYPE_FILENAME ) { // if filebrowser menu type so we go into file browser
@@ -747,13 +748,13 @@ void domenus(void) {
 			    else drawfilelist(fileindex=lastfile);
           drawselector(fileindex); 
           uistate=FILEBROWSER;
-          while(!digitalRead(ENC_SW)) dosequencers(); // keep sequencers running till button released
+          while(!digitalRead(ENC_SW));// dosequencers(); // keep sequencers running till button released
         }
         else {
           undrawselector(topmenu[topmenuindex].submenuindex);
           draweditselector(topmenu[topmenuindex].submenuindex); // show we are editing
           uistate=PARAM_INPUT;  // change the submenu parameter
-          while(!digitalRead(ENC_SW)) dosequencers(); // keep sequencers running till button released
+          while(!digitalRead(ENC_SW)); // dosequencers(); // keep sequencers running till button released
         }
       }  
       
@@ -773,10 +774,11 @@ void domenus(void) {
         drawsubmenu(index);
       }
       if (!digitalRead(ENC_SW)) { // stop changing parameter
+      //if ((Encoder1.getButton() == ClickEncoder::Clicked)) { // stop changing parameter
         undrawselector(topmenu[topmenuindex].submenuindex);
         drawselector(topmenu[topmenuindex].submenuindex); // show we are selecting again
         uistate=SUBSELECT;
-        while(!digitalRead(ENC_SW)) dosequencers(); // keep sequencers running till button released
+        while(!digitalRead(ENC_SW)); // dosequencers(); // keep sequencers running till button released
       }   
       break;
 	  case FILEBROWSER:  // browse files - file structure is ./<filesroot>/<directory>/<file> ie all files must be in a directory and no more than 1 directory deep
@@ -799,7 +801,7 @@ void domenus(void) {
 			    fileindex=lastfile;
           drawfilelist(fileindex);
           drawselector(fileindex);
-			    while(!digitalRead(ENC_SW));// dosequencers(); // keep sequencers running till button released
+			    while(!digitalRead(ENC_SW));// loop here till encoder released, otherwise we go right back into select
 		    }
 		    else if (fileindex == (numfiles -1)) { // last file is always ".." so go up to directories
           popdir();  // go up one level
@@ -807,11 +809,11 @@ void domenus(void) {
 			    lastfile=lastdir=0;        // new directory so start at beginning
           drawfilelist(fileindex=lastdir);
           drawselector(lastdir);
-			    while(!digitalRead(ENC_SW));// dosequencers(); // keep sequencers running till button released
+			    while(!digitalRead(ENC_SW));// 
 		    }
 		    else {  // we have selected a file so load it
 			    exitflag=0;
-			    while (!digitalRead(ENC_SW)) {   // long press to exit - way to get out of a very long file list
+          while (!digitalRead(ENC_SW)) {   // long press to exit - way to get out of a very long file list
             if (Encoder1.getButton() == ClickEncoder::Held) {
 					    exitflag=1;
 					    break;
@@ -862,7 +864,7 @@ void domenus(void) {
 			    drawselector(topmenu[topmenuindex].submenuindex); 
           if (topmenuindex < NTRACKS) showpattern(topmenuindex); // show the piano roll if this is a track menu 
 			    uistate=SUBSELECT;	
-			    while(!digitalRead(ENC_SW)); // dosequencers(); // keep sequencers running till button released
+			    while(!digitalRead(ENC_SW)); // 
           
 		  }
     } // end of case FILEBROWSER
