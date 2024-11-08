@@ -121,7 +121,8 @@ Adafruit_ST7735 display = Adafruit_ST7735(TFT_CS, TFT_RS, TFT_RESET);
 
 #define MIDDLE_C 60 // MIDI note for middle C
 #define HIGHEST_NOTE 76 // upper note for editor
-#define LOWEST_NOTE 44 // lower note for editor
+#define LOWEST_NOTE 43 // lower note for editor
+#define NOTE_DEADZONE 4 // range of notes above highest and below lowest that will result in note being turned off in editor
 #define DEFAULT_LEVEL 64  // default MIDI velocity
 
 #define NTRACKS 16  // 

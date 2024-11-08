@@ -44,8 +44,8 @@ static uint8_t editnote;
 void editnotes(void) {
 
   int16_t enc;
-  
-  static SixteenStepNote *note;
+  static uint8_t note;  
+  static SixteenStepNote *noteptr;
 
   enc=Encoder1.getValue();
 
@@ -53,17 +53,21 @@ void editnotes(void) {
     case INIT_EDITOR:
       editcursorX=editnote=0;
       draweditcursor(editcursorX,GREEN);
+      noteptr=seq[track].getNote(editcursorX,(scene <<4 | track)); // fetch note from this step so it displays correctly in showposition()
+      editnote=note=noteptr->pitch;
+      showpattern(track);  // show whats there
       editstate=SELECTNOTE;
       break;
     case SELECTNOTE:  // scroll l-r to select a note
       if (enc !=0) {
         eraseeditcursor(editcursorX);
         editcursorX+=enc; 
-        int16_t s=steps[track]-1;
+        int16_t s=steps[track]-1; // constrain() is a bit flakey with expressions in it
         editcursorX=constrain(editcursorX,0,s);
         draweditcursor(editcursorX,GREEN);
-        note=seq[track].getNote(editcursorX,(scene <<4 | track)); // fetch note from this step so it displays correctly in showposition()
-        editnote=note->pitch;
+        noteptr=seq[track].getNote(editcursorX,(scene <<4 | track)); // fetch note from this step so it displays correctly in showposition()
+        editnote=note=noteptr->pitch;
+        showpattern(track);  // show whats there
       }
       if (!digitalRead(ENC_SW)) {
         editstate=EDITNOTE;
@@ -77,20 +81,24 @@ void editnotes(void) {
         }; 
       }
     break;
-    case EDITNOTE:  // rotate encoder to change note
+    case EDITNOTE:  // rotate encoder to change note - changed this so if you scroll off the bottom or the top there is more than one click (NOTE_DEADZONE) that removes the note
       if (enc !=0) {
-        note=seq[track].getNote(editcursorX,(scene <<4 | track)); // *** something very weird happening - note pointer getting trashed? had to recode this with editnote variable
-        editnote=note->pitch;
-        if (editnote !=0) {
-          editnote+=enc;
-          if (editnote > HIGHEST_NOTE) editnote=0; // note > range becomes silent
-          if (editnote < LOWEST_NOTE) editnote=0; // note < range becomes silent 
+        noteptr=seq[track].getNote(editcursorX,(scene <<4 | track)); // *** something very weird happening - note pointer getting trashed? had to recode this with editnote variable
+        if (note !=0) {
+          note+=enc;
+          if (note > (HIGHEST_NOTE+NOTE_DEADZONE)) note=LOWEST_NOTE; // 
+          if (note < (LOWEST_NOTE-NOTE_DEADZONE)) note=HIGHEST_NOTE; //  notes loop around
         }
         else {
-          editnote = MIDDLE_C; // turns note back on
+          note = MIDDLE_C; // turns note back on
         }
-        seq[track].removeNote(editcursorX,(scene <<4 | track)); //  
-        if (editnote >0) seq[track].setNote(editcursorX,(scene <<4 | track),editnote,DEFAULT_LEVEL); 
+        seq[track].removeNote(editcursorX,(scene <<4 | track)); // remove any note at this position
+         //  if note is in valid range, save it
+        if ((note >=LOWEST_NOTE) && (note <= HIGHEST_NOTE)) {          
+          seq[track].setNote(editcursorX,(scene <<4 | track),note,DEFAULT_LEVEL); 
+          editnote=note; // so it shows in showpattern()
+        }
+        else editnote=0; // out of range so turn it off for showpattern()
         showpattern(track);
       }
       if (!digitalRead(ENC_SW)) {
