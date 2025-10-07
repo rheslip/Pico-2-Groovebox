@@ -123,7 +123,7 @@ Note: In song mode, a scene is completed/counted down when ALL clips arrive on t
 
 **A Word on SD Cards**
 
-I don't think its mandatory for micro SD card to work with a SPI interface. I have a small assortment of 4gb, 8gb and 16gb micro SD cards and very few of them seem to work with SPI. Make sure the card is formatted as FAT16 or FAT32. All samples **MUST** be under a directory in the root named "Samples". As mentioned before it is suggested you organize your samples in subdirectories with no more than 50 or so samples to keep loading time to a minimum. The maximum path length is 200 characters so don't go too crazy on the directory and sample name lengths.
+I don't think its mandatory for micro SD card to work with a SPI interface. I have a small assortment of 4gb, 8gb and 16gb micro SD cards and very few of them seem to work with SPI. **Note that the latest version of the code uses SDIO to access the SD card**. Make sure the card is formatted as FAT16 or FAT32. All samples **MUST** be under a directory in the root named "Samples". As mentioned before it is suggested you organize your samples in subdirectories with no more than 50 or so samples to keep loading time to a minimum. The maximum path length is 200 characters so don't go too crazy on the directory and sample name lengths.
 
 **FAQ**
 
