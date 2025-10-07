@@ -8,7 +8,7 @@ demo and tutorial https://www.youtube.com/watch?v=hEJh2LgJkRc&t=5s
  
  ![Alt text](https://github.com/rheslip/Pico-2-Groovebox/blob/main/images/front.jpg "Front")
  ![Alt text](https://github.com/rheslip/Pico-2-Groovebox/blob/main/images/back.jpg "Back")
- ![Alt text](https://github.com/rheslip/Pico-2-Groovebox/blob/main/images/Enclosure.jpg "New 3D Printed Enclosure") 
+ ![Alt text](https://github.com/rheslip/Pico-2-Groovebox/blob/main/images/Enclosure.JPG "New 3D Printed Enclosure") 
  
 **Hardware components used**
 
@@ -110,7 +110,7 @@ To copy an entire scene, hold the Scene key and press the Copy key to copy the c
 
 The Slices parameter in the track menu controls if slicing is off (slices=0) or the number of uniform sample slices to use up to a maximum of 16. Sample slices are mapped to the numbered keys - if the number of slices is less than 16 the slice pattern repeats over the numbered keys. Slices can be played on the keypad, recorded as a clip or sequenced with the pattern generator. If using the pattern generator, the Sample Offset is used to select which sample is played on active sequencer steps. ie if Sample Offset is 0, the pattern will only include the first slice, if Sample Offset is 1 it will randomly include slice 0 or slice 1 etc.
 
-Sample Slicer + Pattern Generator = a lot of fun! 
+Sample Slicer + Pattern Generator Autorandomizer = a lot of fun! 
 
 **Song Chain**
 
@@ -121,7 +121,6 @@ As described above, the first menu when scrolling past track 16 is the Song Chai
 Note: In song mode, a scene is completed/counted down when ALL clips arrive on the last step at the same time. e.g. if one of the tracks is set to a sequence length of 64 and the others are 16 steps, the other tracks will be repeated 4 times and when the 64 step sequence ends the scene counter will be counted down. If we have a track with a sequence length of 16 and another with a length of 15, it will take 16 iterations for the two tracks to arrive at the last step at the same time. If you add another track with 14 steps, its going to take a long time for them to all arrive at the last step at the same time! In general you should keep sequence lengths multiples of 16 or 1 bar.
 
 
-A new randomization feature has been added to the track menus.
 **A Word on SD Cards**
 
 I don't think its mandatory for micro SD card to work with a SPI interface. I have a small assortment of 4gb, 8gb and 16gb micro SD cards and very few of them seem to work with SPI. Make sure the card is formatted as FAT16 or FAT32. All samples **MUST** be under a directory in the root named "Samples". As mentioned before it is suggested you organize your samples in subdirectories with no more than 50 or so samples to keep loading time to a minimum. The maximum path length is 200 characters so don't go too crazy on the directory and sample name lengths.
