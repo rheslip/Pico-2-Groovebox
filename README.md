@@ -135,7 +135,7 @@ Why the pattern generator? I had it set up as just a recorder and then quickly r
 
 Is the code stable? Not completely. It crashes now and then but I've used it for hours on end with no glitches. Still working on those pesky bugs...
 
-Why is loading files so slow? I'm using the SD library included with Arduino Pico which uses SPI. Supposedly you can get 3.5 mbytes/sec read speeds but I've tried everything and the best I can get is about 500kb/sec. If you have suggestions please contact me.
+Why is loading files so slow? **Its MUCH better with the new SDIO interface**. Still not as fast as I'd like but very usable.
 
 What file formats will it read? 16 and 24 bit, 44hkz, 22khz, stereo or mono .WAV files. It converts everything to 22khz mono internally. I suggest you organize your samples into directories with no more than 50 or so samples per directory to minimize loading time.
 
