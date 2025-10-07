@@ -39,6 +39,7 @@
 // floats in range -9.99 to +9.99 - floats are displayed but the parameter behind them is an int in the range -999 to +999 so your code has to convert the int to float
 // the parameter field in the submenu initializer must point to an integer variable - when you edit the on screen value its this value you are changing
 // the handler field in the submenu initializer must be either null or point to a function which is called when you edit the parameter
+// may 2025 - changed the indexes in the menu structs and the routines that use them from int8 to int16 - int8 not enough to handle lots of files
 
 // these defs for 160x128 display with 6x8 font
 #define SCREENWIDTH 160
@@ -110,8 +111,8 @@ struct submenu {
 struct menu {
    const char *name; // menu text
    struct submenu * submenus; // points to submenus for this menu
-   int8_t submenuindex;   // stores the index of the submenu we are currently using
-   int8_t numsubmenus; // number of submenus - not sure why this has to be int but it crashes otherwise. compiler bug?
+   int16_t submenuindex;   // stores the index of the submenu we are currently using
+   int16_t numsubmenus; // number of submenus - not sure why this has to be int but it crashes otherwise. compiler bug?
 };
 
 // dummy variable for menu testing
@@ -471,7 +472,8 @@ struct menu mainmenu[] = {
 menu * topmenu=mainmenu;  // points at current menu
 
 // highlight the currently selected menu item
-void drawselector( int8_t index) {
+// int16 because file display index can be very large
+void drawselector( int16_t index) {
   int line = index % TOPMENU_LINES;
   display.setCursor (0, TOPMENU_Y+DISPLAY_Y_MENUPAD+line*(DISPLAY_CHAR_HEIGHT+DISPLAY_Y_MENUPAD));
   display.print(">"); 
@@ -479,7 +481,7 @@ void drawselector( int8_t index) {
 }
 
 // highlight the currently selected menu item as being edited
-void draweditselector( int8_t index) {
+void draweditselector( int16_t index) {
   int line = index % TOPMENU_LINES;
   display.setCursor (0, TOPMENU_Y+DISPLAY_Y_MENUPAD+line*(DISPLAY_CHAR_HEIGHT+DISPLAY_Y_MENUPAD) );
   display.setTextColor(RED,BLACK);
@@ -489,7 +491,7 @@ void draweditselector( int8_t index) {
 }
 
 // dehighlight the currently selected menu item
-void undrawselector( int8_t index) {
+void undrawselector( int16_t index) {
   int line = index % TOPMENU_LINES;
   display.setCursor (0, TOPMENU_Y+DISPLAY_Y_MENUPAD+line*(DISPLAY_CHAR_HEIGHT+DISPLAY_Y_MENUPAD) );
   display.print(" "); 
@@ -498,7 +500,7 @@ void undrawselector( int8_t index) {
 
 // display the top menu
 // index - currently selected top menu
-void drawtopmenu( int8_t index) {
+void drawtopmenu( int16_t index) {
     display.fillScreen(BLACK);
 //    display.fillRect(0,TOPMENU_Y,SCREENWIDTH,SCREENHEIGHT-TOPMENU_Y,BLACK); // erase old 
     display.setCursor(TOPMENU_X,TOPMENU_Y);
@@ -526,7 +528,7 @@ void drawtopmenu( int8_t index) {
 // display a sub menu item and its value
 // index is the index into the current top menu's submenu array
 
-void drawsubmenu( int8_t index) {
+void drawsubmenu( int16_t index) {
     submenu * sub;
     sub=topmenu[topmenuindex].submenus; //get pointer to the submenu array
     // print the name text
@@ -574,7 +576,7 @@ void drawsubmenu( int8_t index) {
 // display sub menus of the current topmenu
 
 void drawsubmenus() {
-    int8_t index,len;
+    int16_t index,len;
     index= topmenu[topmenuindex].submenuindex; // submenu field index
     len= topmenu[topmenuindex].numsubmenus; // number of submenu items
     submenu * sub=topmenu[topmenuindex].submenus; //get pointer to the current submenu array
@@ -598,8 +600,9 @@ void drawsubmenus() {
 
 /* get file size */
 int16_t get_filesize(char * path) {
-  File f, entry;
-  f=SD.open(path); // open the path
+//  File32 f, entry;
+  FsFile f, entry;
+  f=sd.open(path); // open the path
   entry =  f.openNextFile(); // open the file - seems to be necessary
   return f.size(); // size in bytes
 }
@@ -607,17 +610,22 @@ int16_t get_filesize(char * path) {
 
 /* function to get the content of a given folder */
 int16_t get_dir_content(char * path) {
-  File dir; 
+ // File32 dir; 
+  FsFile dir; 
   int16_t nfiles;
-  dir = SD.open(path); // open the path
+  char filename[80];
+  dir = sd.open(path); // open the path
   nfiles=0;
   while (true) {
-    File entry =  dir.openNextFile();
+   // File32 entry =  dir.openNextFile();
+    FsFile entry =  dir.openNextFile();
     if (! entry) break;
  //   Serial.print(entry.name());
     if (entry.isDirectory()) {
  //     Serial.println("/");
-	    strcpy(files[nfiles].name,entry.name());
+	    //strcpy(files[nfiles].name,entry.name());
+      entry.getName(filename,80);
+      strcpy(files[nfiles].name,filename);
       files[nfiles].name[0]=toupper(files[nfiles].name[0]); // so they sort properly
 		  files[nfiles].isdir=true;
       files[nfiles].size=0;
@@ -627,7 +635,9 @@ int16_t get_dir_content(char * path) {
     } else {
  //     Serial.print("\t\t");
 //      Serial.println(entry.size(), DEC); // files have sizes, directories do not
-	    strcpy(files[nfiles].name,entry.name());
+	    // strcpy(files[nfiles].name,entry.name());
+      entry.getName(filename,80);
+      strcpy(files[nfiles].name,filename);
       files[nfiles].name[0]=toupper(files[nfiles].name[0]); // so they sort properly
 		  files[nfiles].isdir=false;
       files[nfiles].size=entry.size();
@@ -652,14 +662,27 @@ void drawfilelist( int16_t index) {
 //  display.setCursor(0,0);
 //  display.printf("S%d /%s",topmenuindex,directory); // show sample # and current directory on top line
   int16_t i = (index/FILEMENU_LINES)*FILEMENU_LINES; // which group of menu items to display
-  int last = i+numfiles % TOPMENU_LINES; // show only up to the last menu item
+  int16_t last = i+numfiles % TOPMENU_LINES; // show only up to the last menu item
   if ((i + FILEMENU_LINES) <= numfiles) last = i+FILEMENU_LINES; // handles case like 2nd of 3 menu pages
-  int y=FILEMENU_Y+DISPLAY_Y_MENUPAD;
+  int16_t y=FILEMENU_Y+DISPLAY_Y_MENUPAD;
 
   for (i; i< last ; ++i) {
     display.setCursor ( FILEMENU_X, y ); 
-	  if (files[i].isdir) display.print("/"); // show its a directory  	
-    display.printf("%-.24s",files[i].name);	
+	  if (files[i].isdir) display.print("/"); // show its a directory 
+   // int16_t len =strlen(files[i].name);
+    display.printf("%-.24s",files[i].name);
+    /* not sure I like the leading truncated filenames
+    if ( len < 24 ) display.printf("%-.24s",files[i].name);	 // left justify filename - doesn't work well for very long names
+    else { // do surgery to shorten filename 
+      char temp[80];
+      strcpy(temp,files[i].name);
+      char * p=strchr(temp,'.');
+      if (p) *p=0; // chop off the ".wav"
+      len=strlen(temp);
+      if ( len < 24 ) display.printf("%-.24s",files[i].name);
+      else display.printf("%.24s",files[i].name+(len-24));	// chops off beginning as well if its still too long
+    }
+    */
     y+=DISPLAY_CHAR_HEIGHT+DISPLAY_Y_MENUPAD;
   }
    // display.display();
@@ -677,6 +700,12 @@ bool popdir(void) {
   return 0;
 }
 
+// encoder button pressed stalls the menu system so do anything that needs doing
+// I have a theory that the MPR121 is becoming unresponsive if not polled regularly
+void background(void) {
+  padA.touched();
+  padB.touched();
+}
 
 // menu handler
 // a run to completion state machine - it never blocks except while waiting for encoder button release
@@ -685,7 +714,7 @@ bool popdir(void) {
 
 void domenus(void) {
   int16_t enc;
-  int8_t index; 
+  int16_t index; 
   char temp[80]; // for file paths
   static int16_t fileindex=0;  // index of selected file/directory   
   static int16_t lastdir=0;  // index of last directory we looked at
@@ -704,7 +733,8 @@ void domenus(void) {
 
   switch (uistate) {
     case TOPSELECT:  // scrolling thru top menu
-      if ((enc !=0) && (currtouched & TRACK_BUTTON)) { // scroll thru submenus
+      // if ((enc !=0) && (currtouched & TRACK_BUTTON)) { // scroll thru submenus
+      if ((enc !=0) && (padA.touched() & TRACK_BUTTON)) { // scroll thru submenus
         int topmenupage = (topmenuindex) / TOPMENU_LINES;  
         topmenuindex+=enc;
         if (topmenuindex <0) topmenuindex=0;  // we don't wrap menus around, just stop at the ends
@@ -714,7 +744,8 @@ void domenus(void) {
         drawselector(topmenu[topmenuindex].submenuindex);  
         if (topmenuindex < NTRACKS) showpattern(topmenuindex); // show the piano roll if this is a track menu
       }
-      if (!(currtouched & TRACK_BUTTON)) {
+      //if (!(currtouched & TRACK_BUTTON)) {
+      if (!(padA.touched() & TRACK_BUTTON)) {
         uistate=SUBSELECT; // do submenu when button is released
         topmenu[topmenuindex].submenuindex=0;  // start from the first item
         drawsubmenus();
@@ -748,17 +779,18 @@ void domenus(void) {
 			    else drawfilelist(fileindex=lastfile);
           drawselector(fileindex); 
           uistate=FILEBROWSER;
-          while(!digitalRead(ENC_SW));// dosequencers(); // keep sequencers running till button released
+          while(!digitalRead(ENC_SW)) background();// dosequencers(); // keep sequencers running till button released
         }
         else {
           undrawselector(topmenu[topmenuindex].submenuindex);
           draweditselector(topmenu[topmenuindex].submenuindex); // show we are editing
           uistate=PARAM_INPUT;  // change the submenu parameter
-          while(!digitalRead(ENC_SW)); // dosequencers(); // keep sequencers running till button released
+          while(!digitalRead(ENC_SW)) background(); // dosequencers(); // keep sequencers running till button released
         }
       }  
       
-      if (currtouched & TRACK_BUTTON) uistate=TOPSELECT; // press button to select track again   
+      //if (currtouched & TRACK_BUTTON) uistate=TOPSELECT; // press button to select track again  
+      if (padA.touched() & TRACK_BUTTON) uistate=TOPSELECT; // press button to select track again    
 
       break;
     case PARAM_INPUT:  // changing value of a parameter
@@ -778,12 +810,12 @@ void domenus(void) {
         undrawselector(topmenu[topmenuindex].submenuindex);
         drawselector(topmenu[topmenuindex].submenuindex); // show we are selecting again
         uistate=SUBSELECT;
-        while(!digitalRead(ENC_SW)); // dosequencers(); // keep sequencers running till button released
+        while(!digitalRead(ENC_SW)) background(); // dosequencers(); // keep sequencers running till button released
       }   
       break;
-	  case FILEBROWSER:  // browse files - file structure is ./<filesroot>/<directory>/<file> ie all files must be in a directory and no more than 1 directory deep
+	  case FILEBROWSER:  // browse files - file structure is ./<filesroot>/<directory>/<file> 
       if (enc !=0 ) { // move selector
-        int filespage = (fileindex) / FILEMENU_LINES;  
+        int16_t filespage = (fileindex) / FILEMENU_LINES;  
         undrawselector(fileindex);
         fileindex+=enc;
         if (fileindex <0) fileindex=0;  // we don't wrap menus around, just stop at the ends
@@ -801,7 +833,7 @@ void domenus(void) {
 			    fileindex=lastfile;
           drawfilelist(fileindex);
           drawselector(fileindex);
-			    while(!digitalRead(ENC_SW));// loop here till encoder released, otherwise we go right back into select
+			    while(!digitalRead(ENC_SW)) background() ;// loop here till encoder released, otherwise we go right back into select
 		    }
 		    else if (fileindex == (numfiles -1)) { // last file is always ".." so go up to directories
           popdir();  // go up one level
@@ -809,7 +841,7 @@ void domenus(void) {
 			    lastfile=lastdir=0;        // new directory so start at beginning
           drawfilelist(fileindex=lastdir);
           drawselector(lastdir);
-			    while(!digitalRead(ENC_SW));// 
+			    while(!digitalRead(ENC_SW)) background();// 
 		    }
 		    else {  // we have selected a file so load it
 			    exitflag=0;
@@ -864,7 +896,7 @@ void domenus(void) {
 			    drawselector(topmenu[topmenuindex].submenuindex); 
           if (topmenuindex < NTRACKS) showpattern(topmenuindex); // show the piano roll if this is a track menu 
 			    uistate=SUBSELECT;	
-			    while(!digitalRead(ENC_SW)); // 
+			    while(!digitalRead(ENC_SW)) background(); // 
           
 		  }
     } // end of case FILEBROWSER

@@ -41,11 +41,11 @@
 //#include "driver/i2s.h"
 //#include "freertos/queue.h"
 #include <Wire.h>
-//#include "SdFat.h"
-//#include "sdios.h"
+#include "SdFat.h"
+#include "sdios.h"
 
 #include <SPI.h>
-#include <SD.h>
+//#include <SD.h>
 
 #include <Adafruit_GFX.h>
 #include <Adafruit_ST7735.h> // Hardware-specific library for ST7735
@@ -69,9 +69,22 @@
 #define _BV(bit) (1 << (bit)) 
 #endif
 
+// Try to select the best SD card configuration.
+#if defined(HAS_TEENSY_SDIO)
+#define SD_CONFIG SdioConfig(FIFO_SDIO)
+#elif defined(RP_CLK_GPIO) && defined(RP_CMD_GPIO) && defined(RP_DAT0_GPIO)
+// See the Rp2040SdioSetup example for RP2040/RP2350 boards.
+#define SD_CONFIG SdioConfig(RP_CLK_GPIO, RP_CMD_GPIO, RP_DAT0_GPIO)
+#elif ENABLE_DEDICATED_SPI
+#define SD_CONFIG SdSpiConfig(SD_CS_PIN, DEDICATED_SPI, SPI_CLOCK)
+#else  // HAS_TEENSY_SDIO
+#define SD_CONFIG SdSpiConfig(SD_CS_PIN, SHARED_SPI, SPI_CLOCK)
+#endif  // HAS_TEENSY_SDIO
+
+
 // SD_FAT_TYPE = 0 for SdFat/File as defined in SdFatConfig.h,
 // 1 for FAT16/FAT32, 2 for exFAT, 3 for FAT16/FAT32 and exFAT.
-#define SD_FAT_TYPE 1
+#define SD_FAT_TYPE 3
 
 #if SD_FAT_TYPE == 0
 SdFat sd;
@@ -91,7 +104,7 @@ FsFile file;
 
 // Try max SPI clock for an SD. Reduce SPI_CLOCK if errors occur.
 //#define SPI_CLOCK SD_SCK_MHZ(50)
-#define SPI_CLOCK SD_SCK_MHZ(25)
+// #define SPI_CLOCK SD_SCK_MHZ(25)
 
 #define MONITOR_CPU1  // define to enable 2nd core monitoring
 //#define HW_DEBUG  // for debug pin usage
@@ -805,10 +818,12 @@ void setup() {
   SPI.setSCK(SPI0_SCLK);
   SPI.setTX(SPI0_MOSI);
 
+/* using SDIO for SD card now
   SPI1.setRX(SPI1_MISO);
   SPI1.setCS(SPI1_CS);
   SPI1.setSCK(SPI1_SCLK);
   SPI1.setTX(SPI1_MOSI );
+*/
 
   Wire.setSDA(SDA);
   Wire.setSCL(SCL);
@@ -824,8 +839,8 @@ void setup() {
   pinMode(DEBUG_PIN,OUTPUT); // hi = CPU busy
 #endif 
 
-  pinMode(SD_CS, OUTPUT);
-  digitalWrite(SD_CS,1);
+//  pinMode(SD_CS, OUTPUT);
+//  digitalWrite(SD_CS,1);
 
     // by default, we'll generate the high voltage from the 3.3v line internally! (neat!)
 //  display.begin(SH1106_SWITCHCAPVCC);  // initialize display
@@ -858,8 +873,10 @@ void setup() {
  //     while(1);
   }
 
-  padA.setThresholds(15,6); // make pads a bit more sensitive - dropped a lot with labels stuck on them
-  padB.setThresholds(15,6);
+  padA.setThresholds(13,8); // make pads a bit more sensitive - sensitivity dropped a lot with labels stuck on them
+  padB.setThresholds(13,8);
+  padA.setThreshold(PAD16, 6, 4); // track button is problematic
+  padA.setThreshold(PAD10, 8, 5); // "3" button is problematic as well
 
 // set up Pico I2S for PT8211 stereo DAC
 	DAC.setBCLK(BCLK);
@@ -870,7 +887,8 @@ void setup() {
 	DAC.begin(SAMPLERATE);
 
   display.println("Initializing SD card...");
-  if (!(SD.begin(SPI1_CS, SPI1))) {
+ // if (!(SD.begin(SPI1_CS, SPI1))) {
+  if (!sd.begin(SD_CONFIG)) {
     display.println("SD initialization failed!");
     while (1);
   }
@@ -1069,11 +1087,15 @@ void loop() {
   for (uint8_t i=0; i<NPADS; i++) { // have to scan all the pads because they are not in order
     if (padmap[i] < 16) { // process just the number pads
       if ((currtouched & _BV(i)) && !(lasttouched & _BV(i)) ) { // if pad was pressed
+       // Serial.printf("numpad %d curtouched %04x %02x\n",padmap[i],currtouched, padA.touched());
         if ((currtouched & SCENE_BUTTON) && (!(currtouched & COPY_BUTTON)) && (!(currtouched & PASTE_BUTTON))) {
+         // Serial.printf("scene \n");
           if (!edit_mode) scene=padmap[i];  // scene button + pad = change scene
           showpattern(track); // update piano roll for this scene
         }
-        else if ((currtouched & TRACK_BUTTON) && (!edit_mode)) { // track button + pad = change track
+        // else if ((currtouched & TRACK_BUTTON) && (!edit_mode)) { // track button + pad = change track
+        else if ((padA.touched() & TRACK_BUTTON) && (!edit_mode)) { // track button + pad = change track
+       // Serial.printf("track %d\n",padmap[i]);
           track=topmenuindex=padmap[i];  // *** kludgy - force menu to that track
           uistate=SUBSELECT; // do submenu when button is released
           topmenu[topmenuindex].submenuindex=0;  // start from the first item

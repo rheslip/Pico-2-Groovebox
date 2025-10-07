@@ -30,7 +30,8 @@
 uint8_t read_uint8();
 int16_t read_int16();
 uint32_t read_uint32();
-File in; 
+//File32 in; 
+FsFile in; 
 bool EOF_error;  // added for debugging data read errors
 
 // WAV file format:
@@ -55,7 +56,7 @@ int32_t loadwav(char * path, uint8_t * buf)
 
   EOF_error=false;
 
-	in = SD.open(path); // open the file
+	in = sd.open(path); // open the file
 
 	// read the WAV file's header
 	for (i=0; i < 4; i++) {

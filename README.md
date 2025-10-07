@@ -1,11 +1,14 @@
 # Pico 2 Groovebox
  Sample player/groovebox based on RP2350
 
+Oct 2025 - added step editor and .stl files for 3D printed enclosure. SD interface changed from SPI to SDIO which improved flie loading speed a lot. Tweeks to the sensitivity of some of the MPR121 keypad keys have been added. I had issues with keypresses being detected too easily or not at all. Still not completely resolved but much improved. Various other bug fixes and enhancements.
+
+
 demo and tutorial https://www.youtube.com/watch?v=hEJh2LgJkRc&t=5s 
  
  ![Alt text](https://github.com/rheslip/Pico-2-Groovebox/blob/main/images/front.jpg "Front")
  ![Alt text](https://github.com/rheslip/Pico-2-Groovebox/blob/main/images/back.jpg "Back")
- 
+ ![Alt text](https://github.com/rheslip/Pico-2-Groovebox/blob/main/images/Enclosure.jpg "New 3D Printed Enclosure") 
  
 **Hardware components used**
 
@@ -21,7 +24,7 @@ Encoder with switch
 
 2x MPR121 touch sensor modules from AliExpress
 
-Micro SD breakout board
+Micro SD breakout board **Note that the latest version of the code uses SDIO which is much faster**
 
 **Optional:**
 
@@ -32,6 +35,8 @@ LiPo charger module from AliExpress
 Power switch
 
 3V to 5V stepup regulator from AliExpress
+
+3d Printed Case - .stl files in the hardware section. Design is for a build on 80x120mm perfboard available on Aliexpress or Amazon. No doubt will need tweeking unless your layout is exactly like mine.
 
 There is no schematic but it should be pretty obvious how to wire the modules to the RP2350 board if you look at IO.h in the source code.
 
@@ -87,9 +92,13 @@ The Pattern Offset parameter generates a series of random pitch offsets in the r
 
 The Level Offset parameter generates a series of random velocity offsets in the range selected in the menu. These offsets are added to velocity of the sample to give the sequence some random volume variations. The Level Offset parameter is scaled such that its maximum value (16) results in a random velocity range of 0 to 127.
 
-The Autorandomizer parameter when "On" will re-randomize the pitch offsets and velocity offsets when the sequencer loops back to the first step.
+The Autorandomizer parameter when "On" will re-randomize the pitch offsets and velocity offsets when the sequencer loops back to the first step. Huge fun when used with the sample slicer on loops!
 
 Note that the pattern generator overwrites the sequencer clip with a new generated sequence when any of its parameters are changed. This means you can record more steps over a pattern but you can't add a pattern on top of a recorded clip.
+
+**Step Editor**
+
+The pattern step editor is accessed by pressing the F1 key - "Edit" will appear at the top of the display. A green cursor will appear under the first step on the piano roll. The number to the right of "Edit" is the step the cursor is on - rotate the encoder to change steps. To edit a step press the encoder - the cursor will turn red indicating we are entering or editing a note at this step. If there is no note at the step one will automatically be inserted with MIDI note 60 - the MIDI note number appears beside the step number at the top of the screen. Turn the encoder to change the note pitch (+-1 octave). To remove a note, turn the encoder until the note dissappears off the top or bottom of the piano roll display. Press the encoder to exit note entry mode. Press F1 again to exit the step editor. 
 
 **Clip/Scene Cut and Paste**
 
@@ -111,6 +120,8 @@ As described above, the first menu when scrolling past track 16 is the Song Chai
 
 Note: In song mode, a scene is completed/counted down when ALL clips arrive on the last step at the same time. e.g. if one of the tracks is set to a sequence length of 64 and the others are 16 steps, the other tracks will be repeated 4 times and when the 64 step sequence ends the scene counter will be counted down. If we have a track with a sequence length of 16 and another with a length of 15, it will take 16 iterations for the two tracks to arrive at the last step at the same time. If you add another track with 14 steps, its going to take a long time for them to all arrive at the last step at the same time! In general you should keep sequence lengths multiples of 16 or 1 bar.
 
+
+A new randomization feature has been added to the track menus.
 **A Word on SD Cards**
 
 I don't think its mandatory for micro SD card to work with a SPI interface. I have a small assortment of 4gb, 8gb and 16gb micro SD cards and very few of them seem to work with SPI. Make sure the card is formatted as FAT16 or FAT32. All samples **MUST** be under a directory in the root named "Samples". As mentioned before it is suggested you organize your samples in subdirectories with no more than 50 or so samples to keep loading time to a minimum. The maximum path length is 200 characters so don't go too crazy on the directory and sample name lengths.

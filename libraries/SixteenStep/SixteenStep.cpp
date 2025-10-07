@@ -143,6 +143,29 @@ void SixteenStep::run()
 
 }
 
+// step
+//
+// IMPORTANT: This method should only be called in the
+// main loop of the sketch, and is required for the
+// sequencer to work.
+//
+// This method steps the sequencer to the next step
+// R.H. added to allow external clock for eurorack module
+//
+// @access public
+// @return void
+//
+void SixteenStep::step()
+{
+
+  if(! _running)
+    return;
+
+  // advance and send notes
+  _step();
+
+}
+
 // setTempo
 //
 // Allows user to dynamiclly set the tempo in

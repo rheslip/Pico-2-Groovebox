@@ -38,10 +38,16 @@
 #define SPI0_CS 17
 #define SPI0_SCLK 18
 
+/*
 #define SPI1_MOSI 11
 #define SPI1_MISO 8
 #define SPI1_CS 9
 #define SPI1_SCLK 10
+*/
+// SD card pins
+#define RP_CLK_GPIO 7
+#define RP_CMD_GPIO 6
+#define RP_DAT0_GPIO 8
 
 #define SDA 4
 #define SCL 5

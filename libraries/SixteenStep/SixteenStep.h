@@ -86,6 +86,7 @@ class SixteenStep
     void  begin(int tempo, int steps);
     void  begin(int tempo, int steps, int polyphony);
     void  run();
+	void  step();
     void  pause();
     void  start();
     void  stop();
@@ -103,6 +104,7 @@ class SixteenStep
     void  setNote(byte channel, byte pitch, byte velocity);
 	void  setNote( int position, byte channel, byte pitch, byte velocity);
 	void  removeNotes(byte channel);
+	void  removeNote(int position,byte channel);
 	void  dumpNotes(void);
 	SixteenStepNote* getNote(int position, byte channel);
   private:
